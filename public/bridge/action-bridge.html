@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>OpenScout Action Bridge</title>
+</head>
+<body>
+  <script type="module">
+    import { getBridgeActions } from "./bridge-actions.js";
+
+    const actions = new Map(getBridgeActions().map((a) => [a.name, a]));
+
+    window.addEventListener("message", async (event) => {
+      const msg = event.data;
+      if (!msg || typeof msg !== "object" || msg.protocol !== "nsdeploy-bridge/v1") return;
+      if (msg.type === "list_actions") {
+        event.source?.postMessage({
+          protocol: "nsdeploy-bridge/v1",
+          id: msg.id,
+          actions: [...actions.values()].map(({ name, description, inputSchema, effect, availability }) => ({
+            name,
+            description,
+            inputSchema,
+            effect,
+            availability
+          }))
+        }, event.origin === "null" ? "*" : event.origin);
+        return;
+      }
+      if (msg.type === "invoke_action") {
+        const action = actions.get(msg.action);
+        if (!action) {
+          event.source?.postMessage({
+            protocol: "nsdeploy-bridge/v1",
+            id: msg.id,
+            ok: false,
+            error: `Unknown bridge action: ${msg.action}`
+          }, event.origin === "null" ? "*" : event.origin);
+          return;
+        }
+        try {
+          const result = await action.execute(msg.arguments || {}, { requestId: msg.requestId || msg.id });
+          event.source?.postMessage({
+            protocol: "nsdeploy-bridge/v1",
+            id: msg.id,
+            ok: true,
+            result
+          }, event.origin === "null" ? "*" : event.origin);
+        } catch (err) {
+          event.source?.postMessage({
+            protocol: "nsdeploy-bridge/v1",
+            id: msg.id,
+            ok: false,
+            error: String(err?.message || err)
+          }, event.origin === "null" ? "*" : event.origin);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

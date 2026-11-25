@@ -1,0 +1,24 @@
+{
+  "protocol": "nsdeploy-link/v1",
+  "exports": [
+    {
+      "network": "openscout_node",
+      "front_man": "scout_front",
+      "aliases": [
+        "openscout_node",
+        "scout_front",
+        "openscout"
+      ],
+      "url": "openscout_node"
+    }
+  ],
+  "imports": [
+    {
+      "reference": "peer_trust_verifier",
+      "description": "Peer agentic node used to cross-verify manifest integrity and policy posture."
+    }
+  ],
+  "link_updates": {
+    "mode": "browser-local"
+  }
+}

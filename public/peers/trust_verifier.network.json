@@ -1,0 +1,63 @@
+{
+  "metadata": {
+    "description": "Leaf peer trust verifier node demonstrating MVP Profile 0.3 fetch-and-run-locally composition and router/sly_data isolation."
+  },
+  "llm_config": {
+    "model_name": "gpt-4.1-nano"
+  },
+  "max_steps": 6,
+  "tools": [
+    {
+      "name": "verifier_front",
+      "function": {
+        "description": "Verifies manifest trust posture and confirms what sly_data keys were visible across the peer boundary.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "request": {
+              "type": "string",
+              "description": "Concise verification query from caller."
+            }
+          },
+          "required": [
+            "request"
+          ]
+        }
+      },
+      "instructions": "You are verifier_front, an independent peer trust node running inside the caller's browser. Report trust observations based solely on the request text and explicitly permitted sly_data keys. Never claim access to caller API keys or denied sly_data fields.",
+      "allow": {
+        "to_downstream": {
+          "sly_data": []
+        },
+        "to_upstream": {
+          "sly_data": [
+            "peer_trust_badge"
+          ]
+        }
+      },
+      "tools": [
+        "policy_checker"
+      ]
+    },
+    {
+      "name": "policy_checker",
+      "function": {
+        "description": "Checks MVP 0.3 security invariants on the request metadata.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "subject": {
+              "type": "string",
+              "description": "Subject or site identifier to verify."
+            }
+          },
+          "required": [
+            "subject"
+          ]
+        }
+      },
+      "instructions": "Verify policy posture and return a concise trust badge summary.",
+      "tools": []
+    }
+  ]
+}

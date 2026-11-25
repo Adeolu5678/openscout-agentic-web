@@ -1,0 +1,96 @@
+{
+  "brand": "OpenScout Agentic Web Node",
+  "networks": [
+    {
+      "name": "openscout_node",
+      "front_man": "scout_front",
+      "hocon": "./openscout_node.network.json",
+      "description": "Autonomous multi-agent technical due-diligence node that audits GitHub repositories, evaluates Open Agentic Web MVP Profile 0.3 conformance, and composes consented peer agentic sites.",
+      "tags": [
+        "agentified-website",
+        "due-diligence",
+        "conformance-auditor",
+        "mvp-0.3"
+      ],
+      "sample_queries": [
+        "Audit https://github.com/cognizant-ai-labs/agentic-web for engineering hygiene and Open Agentic Web readiness.",
+        "Check Open Agentic Web MVP 0.3 conformance for our local node or a target URL.",
+        "Evaluate our built-in Peer Trust Verifier node and compare sly_data boundary isolation.",
+        "Run a due-diligence scan on a public repo and save an audit dossier."
+      ]
+    }
+  ],
+  "llm_router": {
+    "base_url": "browser://mock",
+    "mock": true,
+    "byok_router": "https://api.openai.com/v1"
+  },
+  "allowed_peers": [
+    "https://worldwideagenticweb.org",
+    "https://agent-atlas-phi.vercel.app",
+    "https://shutdown-clerk.pages.dev",
+    "https://cocvn157.github.io",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173"
+  ],
+  "peer_policy": {
+    "mode": "closed",
+    "deny_origins": [],
+    "note": "Contacts only origins in allowed_peers or explicitly approved runtime peer origins after interactive visitor consent."
+  },
+  "agent_mcp": {
+    "protocol": "nsdeploy-agent-mcp/v1",
+    "network": "openscout_node",
+    "front_man": "scout_front",
+    "available": false,
+    "reason": "Static Open Agentic Web bundle; read-only audit actions are exposed through the browser action bridge."
+  },
+  "theme": {
+    "primary": "#2563eb"
+  },
+  "linking": {
+    "protocol": "nsdeploy-link/v1",
+    "exports": [
+      {
+        "network": "openscout_node",
+        "front_man": "scout_front",
+        "aliases": [
+          "openscout_node",
+          "scout_front",
+          "openscout"
+        ],
+        "url": "openscout_node"
+      }
+    ],
+    "imports": [
+      {
+        "reference": "peer_trust_verifier",
+        "description": "Peer agentic node used to cross-verify manifest integrity and policy posture."
+      }
+    ],
+    "link_updates": {
+      "mode": "browser-local"
+    }
+  },
+  "deployment": {
+    "mode": "static",
+    "self_contained_runtime": true,
+    "browser_mock": true,
+    "direct_byok": true,
+    "direct_mcp_requires_cors": true,
+    "public_mcp_facade": false
+  },
+  "actions": {
+    "version": 1,
+    "module": "./site-actions.js",
+    "bridge": "./bridge/action-bridge.html",
+    "agentTools": [
+      "get_node_catalog",
+      "inspect_agentic_site",
+      "inspect_github_repo",
+      "save_audit_dossier"
+    ]
+  }
+}

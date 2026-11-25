@@ -1,0 +1,22 @@
+{
+  "name": "openscout-agentic-web",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenScout Agentic Web Node — Open Agentic Web MVP Profile 0.3 compliant multi-agent technical due-diligence and conformance auditor.",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check:lf": "node scripts/check-lf.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.0",
+    "vitest": "^3.0.8"
+  }
+}

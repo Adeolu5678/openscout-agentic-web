@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpenScout Agentic Web Node — MVP Profile 0.3</title>
+  <link rel="manifest" href="./agent-manifest.json" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="brand-mark">OS</div>
+        <div>
+          <h1 class="brand-title">OpenScout Agentic Web Node</h1>
+          <p class="brand-sub">Open Agentic Web MVP Profile 0.3 &middot; Network: <code>openscout_node</code> &middot; Front Agent: <code>scout_front</code></p>
+        </div>
+      </div>
+      <div class="topbar-meta">
+        <span id="status-conformance" class="badge badge-pass">Validating...</span>
+        <span id="status-router" class="badge badge-neutral">Router: browser://mock</span>
+        <a class="manifest-link" href="./agent-manifest.json" target="_blank" rel="noopener">agent-manifest.json</a>
+        <a class="manifest-link" href="./openscout_node.network.json" target="_blank" rel="noopener">.network.json</a>
+      </div>
+    </header>
+
+    <main class="workspace-grid">
+      <section class="panel chat-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Multi-Agent Due-Diligence Console</h2>
+            <p class="panel-desc">Runs <code>scout_front</code> &rarr; <code>repo_auditor</code>, <code>spec_conformance_auditor</code>, <code>risk_synthesizer</code> &amp; site actions directly in your browser.</p>
+          </div>
+          <button id="btn-reset-chat" class="btn btn-ghost" type="button">Reset Chat</button>
+        </div>
+
+        <div class="sample-bar" id="sample-queries"></div>
+
+        <div class="chat-feed" id="chat-feed" aria-live="polite"></div>
+
+        <form class="chat-composer" id="chat-form">
+          <textarea
+            id="chat-input"
+            rows="2"
+            placeholder="Ask OpenScout to audit a GitHub repo (e.g. cognizant-ai-labs/agentic-web), inspect an agentic site URL, or save a dossier..."
+            required
+          ></textarea>
+          <div class="composer-actions">
+            <span class="hint">Keys never leave your browser except to your chosen inference router.</span>
+            <button id="btn-send" class="btn btn-primary" type="submit">Run Agent Turn</button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="sidebar">
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Inference &amp; BYOK Router</h2>
+            <span id="byok-badge" class="badge badge-neutral">Mock Mode</span>
+          </div>
+          <form id="byok-form" class="stack-form">
+            <label>
+              <span>Provider Preset</span>
+              <select id="byok-preset"></select>
+            </label>
+            <label>
+              <span>Router Base URL</span>
+              <input id="byok-router" type="text" placeholder="browser://mock or https://api.openai.com/v1" />
+            </label>
+            <label>
+              <span>Model ID</span>
+              <input id="byok-model" type="text" placeholder="openscout-mock-v1 / gpt-4.1-mini / gemini-2.5-flash" />
+            </label>
+            <label>
+              <span>API Key (BYOK &mdash; optional for mock/Ollama)</span>
+              <input id="byok-key" type="password" autocomplete="off" placeholder="sk-... or AIza..." />
+            </label>
+            <p id="byok-note" class="helper-note"></p>
+            <div class="btn-row">
+              <button class="btn btn-primary" type="submit">Apply &amp; Save Profile</button>
+              <button id="btn-clear-byok" class="btn btn-ghost" type="button">Clear Keys</button>
+            </div>
+          </form>
+          <div id="byok-profiles" class="profile-list"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Peer Composition &amp; Consent</h2>
+            <span class="badge badge-info">Fetch-and-Run</span>
+          </div>
+          <form id="peer-form" class="stack-form">
+            <label>
+              <span>Peer Network URL (<code>.../network_name</code>)</span>
+              <input id="peer-url" type="url" required />
+            </label>
+            <div class="quick-peers">
+              <button type="button" class="chip-btn" data-peer-local="1">Built-in Trust Verifier</button>
+              <button type="button" class="chip-btn" data-peer-url="https://agent-atlas-phi.vercel.app/agent_atlas">Agent Atlas</button>
+              <button type="button" class="chip-btn" data-peer-url="https://shutdown-clerk.pages.dev/shutdown_clerk">Shutdown Clerk</button>
+            </div>
+            <label>
+              <span>Peer Query</span>
+              <input id="peer-query" type="text" value="Verify manifest trust posture and report permitted sly_data keys." required />
+            </label>
+            <label>
+              <span>Simulated Private Context (<code>sly_data</code>)</span>
+              <input id="peer-sly" type="text" value='{"caller_audit_id":"audit-01","secret_token":"DO-NOT-LEAK"}' />
+            </label>
+            <button id="btn-run-peer" class="btn btn-secondary" type="submit">Invoke Peer (With Consent)</button>
+          </form>
+        </section>
+
+        <section class="panel trace-panel">
+          <div class="panel-header">
+            <h2>Live Execution Trace &amp; Dossiers</h2>
+            <button id="btn-clear-trace" class="btn btn-ghost" type="button">Clear</button>
+          </div>
+          <div id="trace-list" class="trace-list"></div>
+          <div class="dossier-block">
+            <h3>Saved Audit Dossiers (<code>localStorage</code>)</h3>
+            <div id="dossier-list" class="dossier-list"></div>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <dialog id="consent-dialog" class="modal">
+    <form method="dialog" class="modal-card">
+      <h3>Third-Party Peer Consent Required</h3>
+      <p class="modal-sub">OpenScout wants to fetch and execute an external agent network inside your browser.</p>
+      <dl class="modal-details">
+        <dt>Origin</dt><dd id="consent-origin"></dd>
+        <dt>Network</dt><dd id="consent-network"></dd>
+        <dt>Request Preview (140 chars)</dt><dd id="consent-preview"></dd>
+        <dt>Permitted <code>sly_data</code> Keys</dt><dd id="consent-sly"></dd>
+        <dt>Router Security</dt><dd>Runs on YOUR active router; peer never receives your BYOK key.</dd>
+      </dl>
+      <div class="modal-actions">
+        <button id="consent-decline" class="btn btn-ghost" type="button">Decline</button>
+        <button id="consent-allow" class="btn btn-secondary" type="button">Allow Once</button>
+        <button id="consent-always" class="btn btn-primary" type="button">Always Allow Origin</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirm-dialog" class="modal">
+    <form method="dialog" class="modal-card">
+      <h3>Confirm Site Write Action</h3>
+      <p class="modal-sub">Review the exact action and immutable arguments before execution.</p>
+      <pre id="confirm-payload" class="code-box"></pre>
+      <div class="modal-actions">
+        <button id="confirm-cancel" class="btn btn-ghost" type="button">Cancel</button>
+        <button id="confirm-approve" class="btn btn-primary" type="button">Approve &amp; Execute</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

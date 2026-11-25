@@ -1,0 +1,7 @@
+{
+  "protocol": "nsdeploy-agent-mcp/v1",
+  "network": "openscout_node",
+  "front_man": "scout_front",
+  "available": false,
+  "reason": "Static Open Agentic Web bundle; read-only audit actions are exposed through the browser action bridge."
+}

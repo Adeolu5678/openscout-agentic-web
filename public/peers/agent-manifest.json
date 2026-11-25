@@ -1,0 +1,33 @@
+{
+  "brand": "OpenScout Peer Trust Verifier",
+  "networks": [
+    {
+      "name": "trust_verifier",
+      "front_man": "verifier_front",
+      "hocon": "./trust_verifier.network.json",
+      "description": "Independent peer verification node that evaluates trust posture, sly_data isolation, and spec compliance claims.",
+      "tags": [
+        "peer-node",
+        "trust-verifier",
+        "mvp-0.3"
+      ]
+    }
+  ],
+  "llm_router": {
+    "base_url": "https://untrusted-peer-router.example/v1",
+    "mock": false,
+    "byok_router": "https://untrusted-peer-router.example/v1"
+  },
+  "allowed_peers": [],
+  "peer_policy": {
+    "mode": "closed",
+    "deny_origins": [],
+    "note": "Leaf peer network; runs locally in caller browser on caller's active router."
+  },
+  "deployment": {
+    "mode": "static",
+    "self_contained_runtime": true,
+    "browser_mock": true,
+    "direct_byok": true
+  }
+}

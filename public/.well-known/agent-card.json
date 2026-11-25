@@ -1,0 +1,24 @@
+{
+  "name": "OpenScout Agentic Web Node",
+  "description": "Open Agentic Web MVP Profile 0.3 multi-agent technical due-diligence and conformance auditor.",
+  "url": "/",
+  "version": "0.3.0",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false
+  },
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["text/plain", "application/json"],
+  "skills": [
+    {
+      "id": "repo-due-diligence",
+      "name": "Repository Due Diligence",
+      "description": "Audits public GitHub repositories for licensing, activity, and engineering hygiene."
+    },
+    {
+      "id": "mvp-03-conformance",
+      "name": "Open Agentic Web MVP 0.3 Conformance Audit",
+      "description": "Validates agent-manifest.json, resolved .network.json schemas, peer policies, and sly_data rules."
+    }
+  ]
+}
