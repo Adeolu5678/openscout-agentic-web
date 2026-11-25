@@ -10,8 +10,8 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="brand-block">
-        <div class="brand-mark">OS</div>
-        <div>
+        <div class="brand-mark" aria-hidden="true">OS</div>
+        <div class="brand-copy">
           <h1 class="brand-title">OpenScout Agentic Web Node</h1>
           <p class="brand-sub">Open Agentic Web MVP Profile 0.3 &middot; Network: <code>openscout_node</code> &middot; Front Agent: <code>scout_front</code></p>
         </div>
@@ -27,9 +27,9 @@
     <main class="workspace-grid">
       <section class="panel chat-panel">
         <div class="panel-header">
-          <div>
+          <div class="panel-title-wrap">
             <h2>Multi-Agent Due-Diligence Console</h2>
-            <p class="panel-desc">Runs <code>scout_front</code> &rarr; <code>repo_auditor</code>, <code>spec_conformance_auditor</code>, <code>risk_synthesizer</code> &amp; site actions directly in your browser.</p>
+            <p class="panel-desc">Runs Front Agent <code>scout_front</code> &rarr; <code>repo_auditor</code>, <code>spec_conformance_auditor</code>, <code>risk_synthesizer</code> &amp; site actions directly in your browser.</p>
           </div>
           <button id="btn-reset-chat" class="btn btn-ghost" type="button">Reset Chat</button>
         </div>
@@ -52,76 +52,145 @@
         </form>
       </section>
 
-      <aside class="sidebar">
-        <section class="panel">
-          <div class="panel-header">
-            <h2>Inference &amp; BYOK Router</h2>
-            <span id="byok-badge" class="badge badge-neutral">Mock Mode</span>
-          </div>
-          <form id="byok-form" class="stack-form">
-            <label>
-              <span>Provider Preset</span>
-              <select id="byok-preset"></select>
-            </label>
-            <label>
-              <span>Router Base URL</span>
-              <input id="byok-router" type="text" placeholder="browser://mock or https://api.openai.com/v1" />
-            </label>
-            <label>
-              <span>Model ID</span>
-              <input id="byok-model" type="text" placeholder="openscout-mock-v1 / gpt-4.1-mini / gemini-2.5-flash" />
-            </label>
-            <label>
-              <span>API Key (BYOK &mdash; optional for mock/Ollama)</span>
-              <input id="byok-key" type="password" autocomplete="off" placeholder="sk-... or AIza..." />
-            </label>
-            <p id="byok-note" class="helper-note"></p>
-            <div class="btn-row">
-              <button class="btn btn-primary" type="submit">Apply &amp; Save Profile</button>
-              <button id="btn-clear-byok" class="btn btn-ghost" type="button">Clear Keys</button>
-            </div>
-          </form>
-          <div id="byok-profiles" class="profile-list"></div>
-        </section>
+      <aside class="panel inspector-panel" aria-label="Node Inspector">
+        <div class="inspector-tabs" role="tablist" aria-label="Inspector Sections">
+          <button
+            type="button"
+            class="tab-btn is-active"
+            role="tab"
+            id="tab-btn-network"
+            data-tab="network"
+            aria-selected="true"
+            aria-controls="tab-panel-network"
+          >
+            Network &amp; Peers
+          </button>
+          <button
+            type="button"
+            class="tab-btn"
+            role="tab"
+            id="tab-btn-trace"
+            data-tab="trace"
+            aria-selected="false"
+            aria-controls="tab-panel-trace"
+          >
+            Live Trace &amp; Dossiers <span id="trace-count" class="tab-count">0</span>
+          </button>
+          <button
+            type="button"
+            class="tab-btn"
+            role="tab"
+            id="tab-btn-byok"
+            data-tab="byok"
+            aria-selected="false"
+            aria-controls="tab-panel-byok"
+          >
+            BYOK &amp; Policy
+          </button>
+        </div>
 
-        <section class="panel">
-          <div class="panel-header">
-            <h2>Peer Composition &amp; Consent</h2>
-            <span class="badge badge-info">Fetch-and-Run</span>
-          </div>
-          <form id="peer-form" class="stack-form">
-            <label>
-              <span>Peer Network URL (<code>.../network_name</code>)</span>
-              <input id="peer-url" type="url" required />
-            </label>
-            <div class="quick-peers">
-              <button type="button" class="chip-btn" data-peer-local="1">Built-in Trust Verifier</button>
-              <button type="button" class="chip-btn" data-peer-url="https://agent-atlas-phi.vercel.app/agent_atlas">Agent Atlas</button>
-              <button type="button" class="chip-btn" data-peer-url="https://shutdown-clerk.pages.dev/shutdown_clerk">Shutdown Clerk</button>
+        <div class="inspector-body">
+          <section id="tab-panel-network" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-network">
+            <div class="info-card" id="node-topology">
+              <div class="info-card-head">
+                <h3>Active Agent Network</h3>
+                <span class="badge badge-info">MVP Profile 0.3</span>
+              </div>
+              <dl class="kv-grid">
+                <dt>Network</dt><dd id="topo-network"><code>openscout_node</code></dd>
+                <dt>Front Agent</dt><dd id="topo-front"><code>scout_front</code></dd>
+                <dt>Specialists</dt><dd id="topo-agents"><code>repo_auditor</code>, <code>spec_conformance_auditor</code>, <code>risk_synthesizer</code></dd>
+              </dl>
             </div>
-            <label>
-              <span>Peer Query</span>
-              <input id="peer-query" type="text" value="Verify manifest trust posture and report permitted sly_data keys." required />
-            </label>
-            <label>
-              <span>Simulated Private Context (<code>sly_data</code>)</span>
-              <input id="peer-sly" type="text" value='{"caller_audit_id":"audit-01","secret_token":"DO-NOT-LEAK"}' />
-            </label>
-            <button id="btn-run-peer" class="btn btn-secondary" type="submit">Invoke Peer (With Consent)</button>
-          </form>
-        </section>
 
-        <section class="panel trace-panel">
-          <div class="panel-header">
-            <h2>Live Execution Trace &amp; Dossiers</h2>
-            <button id="btn-clear-trace" class="btn btn-ghost" type="button">Clear</button>
-          </div>
-          <div id="trace-list" class="trace-list"></div>
-          <div class="dossier-block">
-            <h3>Saved Audit Dossiers (<code>localStorage</code>)</h3>
-            <div id="dossier-list" class="dossier-list"></div>
-          </div>
-        </section>
+            <div class="subpanel-section">
+              <div class="panel-header">
+                <div class="panel-title-wrap">
+                  <h2>Peer Composition &amp; Consent</h2>
+                  <p class="panel-desc">Fetch and execute external Open Agentic Web peers inside your browser after explicit consent.</p>
+                </div>
+                <span class="badge badge-info">Fetch-and-Run</span>
+              </div>
+              <form id="peer-form" class="stack-form">
+                <label>
+                  <span>Peer Network URL (<code>.../network_name</code>)</span>
+                  <input id="peer-url" type="url" required />
+                </label>
+                <div class="quick-peers">
+                  <button type="button" class="chip-btn" data-peer-local="1">Built-in Trust Verifier</button>
+                  <button type="button" class="chip-btn" data-peer-url="https://agent-atlas-phi.vercel.app/agent_atlas">Agent Atlas</button>
+                  <button type="button" class="chip-btn" data-peer-url="https://shutdown-clerk.pages.dev/shutdown_clerk">Shutdown Clerk</button>
+                </div>
+                <label>
+                  <span>Peer Query</span>
+                  <input id="peer-query" type="text" value="Verify manifest trust posture and report permitted sly_data keys." required />
+                </label>
+                <label>
+                  <span>Simulated Private Context (<code>sly_data</code>)</span>
+                  <input id="peer-sly" type="text" value='{"caller_audit_id":"audit-01","secret_token":"DO-NOT-LEAK"}' />
+                </label>
+                <button id="btn-run-peer" class="btn btn-secondary" type="submit">Invoke Peer (With Consent)</button>
+              </form>
+            </div>
+          </section>
+
+          <section id="tab-panel-trace" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-trace" hidden>
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <h2>Live Execution Trace &amp; Dossiers</h2>
+                <p class="panel-desc">Real-time orchestration events, consent decisions, and <code>sly_data</code> boundary checks.</p>
+              </div>
+              <button id="btn-clear-trace" class="btn btn-ghost" type="button">Clear</button>
+            </div>
+            <div id="trace-list" class="trace-list"></div>
+            <div class="dossier-block">
+              <h3>Saved Audit Dossiers (<code>localStorage</code>)</h3>
+              <div id="dossier-list" class="dossier-list"></div>
+            </div>
+          </section>
+
+          <section id="tab-panel-byok" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-byok" hidden>
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <h2>Inference &amp; BYOK Router</h2>
+                <p class="panel-desc">Choose browser mock mode or bring your own API key for direct CORS inference.</p>
+              </div>
+              <span id="byok-badge" class="badge badge-neutral">Mock Mode</span>
+            </div>
+            <form id="byok-form" class="stack-form">
+              <label>
+                <span>Provider Preset</span>
+                <select id="byok-preset"></select>
+              </label>
+              <label>
+                <span>Router Base URL</span>
+                <input id="byok-router" type="text" placeholder="browser://mock or https://api.openai.com/v1" />
+              </label>
+              <label>
+                <span>Model ID</span>
+                <input id="byok-model" type="text" placeholder="openscout-mock-v1 / gpt-4.1-mini / gemini-2.5-flash" />
+              </label>
+              <label>
+                <span>API Key (BYOK &mdash; optional for mock/Ollama)</span>
+                <input id="byok-key" type="password" autocomplete="off" placeholder="sk-... or AIza..." />
+              </label>
+              <p id="byok-note" class="helper-note"></p>
+              <div class="btn-row">
+                <button class="btn btn-primary" type="submit">Apply &amp; Save Profile</button>
+                <button id="btn-clear-byok" class="btn btn-ghost" type="button">Clear Keys</button>
+              </div>
+            </form>
+            <div id="byok-profiles" class="profile-list"></div>
+
+            <div class="info-card policy-card">
+              <div class="info-card-head">
+                <h3>Security &amp; Peer Policy Posture</h3>
+                <span id="policy-mode-badge" class="badge badge-pass">closed</span>
+              </div>
+              <p id="policy-summary" class="helper-note">Peers run on your active caller router and never receive your BYOK key or unpermitted <code>sly_data</code> keys.</p>
+            </div>
+          </section>
+        </div>
       </aside>
     </main>
   </div>

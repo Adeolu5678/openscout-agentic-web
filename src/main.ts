@@ -14,6 +14,7 @@ import {
   type ConsentRequest,
   type TraceEvent,
 } from "./runtime/engine";
+import { renderMarkdownToHtml } from "./runtime/markdown";
 
 const $ = <T extends HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -46,8 +47,15 @@ const peerQueryInput = $<HTMLInputElement>("peer-query");
 const peerSlyInput = $<HTMLInputElement>("peer-sly");
 
 const traceList = $<HTMLDivElement>("trace-list");
+const traceCount = $<HTMLSpanElement>("trace-count");
 const btnClearTrace = $<HTMLButtonElement>("btn-clear-trace");
 const dossierList = $<HTMLDivElement>("dossier-list");
+
+const topoNetwork = $<HTMLElement>("topo-network");
+const topoFront = $<HTMLElement>("topo-front");
+const topoAgents = $<HTMLElement>("topo-agents");
+const policyModeBadge = $<HTMLSpanElement>("policy-mode-badge");
+const policySummary = $<HTMLParagraphElement>("policy-summary");
 
 const consentDialog = $<HTMLDialogElement>("consent-dialog");
 const consentOrigin = $<HTMLElement>("consent-origin");
@@ -62,6 +70,31 @@ const confirmDialog = $<HTMLDialogElement>("confirm-dialog");
 const confirmPayload = $<HTMLPreElement>("confirm-payload");
 const confirmCancel = $<HTMLButtonElement>("confirm-cancel");
 const confirmApprove = $<HTMLButtonElement>("confirm-approve");
+
+let traceEventCounter = 0;
+
+function setupInspectorTabs(): void {
+  const tabButtons = Array.from(document.querySelectorAll<HTMLButtonElement>(".tab-btn[data-tab]"));
+  const tabPanels = Array.from(document.querySelectorAll<HTMLElement>(".tab-panel"));
+
+  const activateTab = (tabName: string) => {
+    for (const btn of tabButtons) {
+      const active = btn.dataset.tab === tabName;
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+    }
+    for (const panel of tabPanels) {
+      const active = panel.id === `tab-panel-${tabName}`;
+      panel.hidden = !active;
+    }
+  };
+
+  for (const btn of tabButtons) {
+    btn.addEventListener("click", () => {
+      if (btn.dataset.tab) activateTab(btn.dataset.tab);
+    });
+  }
+}
 
 function askUserConsent(req: ConsentRequest): Promise<ConsentDecision> {
   return new Promise((resolve) => {
@@ -112,7 +145,13 @@ function appendMessage(role: "user" | "assistant" | "system", text: string, meta
     box.appendChild(m);
   }
   const body = document.createElement("div");
-  body.textContent = text;
+  if (role === "assistant") {
+    body.className = "msg-body msg-body-md";
+    body.innerHTML = renderMarkdownToHtml(text);
+  } else {
+    body.className = "msg-body";
+    body.textContent = text;
+  }
   box.appendChild(body);
   chatFeed.appendChild(box);
   chatFeed.scrollTop = chatFeed.scrollHeight;
@@ -121,13 +160,25 @@ function appendMessage(role: "user" | "assistant" | "system", text: string, meta
 function renderTraceEvent(ev: TraceEvent): void {
   const row = document.createElement("div");
   row.className = "trace-item";
+
   const head = document.createElement("div");
   head.className = "trace-item-head";
-  head.innerHTML = `<strong>${ev.kind}</strong><span>${ev.timestamp.slice(11, 19)}</span>`;
-  const body = document.createElement("code");
-  body.textContent = JSON.stringify(ev.detail);
-  row.append(head, body);
+  const kindEl = document.createElement("strong");
+  kindEl.textContent = ev.kind;
+  const timeEl = document.createElement("span");
+  timeEl.textContent = ev.timestamp.slice(11, 19);
+  head.append(kindEl, timeEl);
+
+  const pre = document.createElement("pre");
+  pre.className = "trace-json";
+  const code = document.createElement("code");
+  code.textContent = JSON.stringify(ev.detail, null, 2);
+  pre.appendChild(code);
+
+  row.append(head, pre);
   traceList.prepend(row);
+  traceEventCounter += 1;
+  traceCount.textContent = String(traceEventCounter);
 }
 
 function renderDossiers(): void {
@@ -246,6 +297,7 @@ function initByokControls(): void {
 }
 
 async function boot(): Promise<void> {
+  setupInspectorTabs();
   initByokControls();
   renderByokProfiles();
   renderDossiers();
@@ -263,10 +315,37 @@ async function boot(): Promise<void> {
   });
 
   try {
-    const { manifest, frontMan } = await engine.loadTop();
+    const { manifest, network, frontMan } = await engine.loadTop();
     statusConformance.textContent = `MVP 0.3 Valid (${frontMan})`;
     statusConformance.className = "badge badge-pass";
     refreshRouterBadges();
+
+    const networkName = manifest.networks[0]?.name || "openscout_node";
+    topoNetwork.innerHTML = "";
+    const netCode = document.createElement("code");
+    netCode.textContent = networkName;
+    topoNetwork.appendChild(netCode);
+
+    topoFront.innerHTML = "";
+    const frontCode = document.createElement("code");
+    frontCode.textContent = frontMan;
+    topoFront.appendChild(frontCode);
+
+    const specialists = network.tools
+      .map((t) => t.name)
+      .filter((n) => n !== frontMan);
+    topoAgents.innerHTML = "";
+    specialists.forEach((name, idx) => {
+      if (idx > 0) topoAgents.appendChild(document.createTextNode(", "));
+      const c = document.createElement("code");
+      c.textContent = name;
+      topoAgents.appendChild(c);
+    });
+
+    const policyMode = (manifest.peer_policy ?? manifest.web_policy)?.mode || "closed";
+    const allowedCount = manifest.allowed_peers?.length ?? 0;
+    policyModeBadge.textContent = policyMode;
+    policySummary.textContent = `Peer policy is '${policyMode}' with ${allowedCount} allowed origin(s). External peers execute on your active caller router and never receive your BYOK key or unpermitted sly_data keys.`;
 
     const samples = manifest.networks[0]?.sample_queries || [];
     for (const q of samples) {
@@ -283,7 +362,7 @@ async function boot(): Promise<void> {
 
     appendMessage(
       "system",
-      `Loaded '${manifest.networks[0].name}' (front_man: ${frontMan}). Choose a sample query or enter any GitHub repo / agentic site URL.`
+      `Loaded '${networkName}' (Front Agent: ${frontMan}). Choose a sample query or enter any GitHub repo / agentic site URL.`
     );
   } catch (err) {
     statusConformance.textContent = "Manifest Error";
@@ -342,6 +421,8 @@ btnResetChat.onclick = () => {
 
 btnClearTrace.onclick = () => {
   traceList.innerHTML = "";
+  traceEventCounter = 0;
+  traceCount.textContent = "0";
 };
 
 void boot();

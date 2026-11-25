@@ -220,10 +220,23 @@ export class LlmClient {
         });
       }
 
-      const summaryBlocks = toolResults.map((r) => `- **${r.name || "tool"}**: ${r.content}`);
+      const listItems: string[] = [];
+      const sectionBlocks: string[] = [];
+      for (const r of toolResults) {
+        const content = r.content.trim();
+        if (content.startsWith("|") || content.includes("\n|")) {
+          sectionBlocks.push(`#### ${r.name || "tool"}\n\n${content}`);
+        } else {
+          listItems.push(`- **${r.name || "tool"}**: ${content}`);
+        }
+      }
+      const reportParts = [
+        ...(listItems.length ? [listItems.join("\n")] : []),
+        ...sectionBlocks,
+      ];
       return {
-        content: summaryBlocks.length
-          ? `### OpenScout Due-Diligence Report (Mock Mode)\n\n${summaryBlocks.join("\n")}`
+        content: reportParts.length
+          ? `### OpenScout Due-Diligence Report (Mock Mode)\n\n${reportParts.join("\n\n")}`
           : "OpenScout is ready. Ask me to audit a GitHub repo (`owner/repo`), inspect an Open Agentic Web site URL, or invoke a consented peer node.",
         toolCalls: [],
         modelUsed: "openscout-mock-v1",
@@ -281,8 +294,9 @@ export class LlmClient {
       } catch {
         // use raw text
       }
+      const compactFindings = findings.slice(0, 180).replace(/[\r\n]+/g, " ").replace(/\|/g, "/");
       return {
-        content: `| Signal | Status | Grounded Evidence |\n|---|---|---|\n| Multi-Agent Delegation | PASS | Executed inside browser runtime |\n| Grounded Tool Data | PASS | ${findings.slice(0, 180).replace(/\|/g, "/")} |`,
+        content: `| Signal | Status | Grounded Evidence |\n|---|---|---|\n| Multi-Agent Delegation | PASS | Executed inside browser runtime |\n| Grounded Tool Data | PASS | ${compactFindings} |`,
         toolCalls: [],
         modelUsed: "openscout-mock-v1",
         routerUsed: "browser://mock",
